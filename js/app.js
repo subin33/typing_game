@@ -17,7 +17,7 @@ const button = document.querySelector(".button");
 const runToast = (text, color = "linear-gradient(to right, #f8f9fa, #ffffffcc)", textColor = "white") => {
   Toastify({
     text: text,
-    duration: 3000,
+    duration: 2000,
     gravity: "top",
     position: "center",
     background: color,
@@ -72,7 +72,7 @@ const run = () => {
   wordInput.disabled = false;
 
   scoreDisplay.innerText = score;
-  timeInterval = setInterval(countDown, 3000);
+  timeInterval = setInterval(countDown, 2000);
 
   updateWord();
 };
