@@ -1,10 +1,9 @@
-// 사용 변수 
-const SETTING_TIME = 9; 
+// 사용 변수
+const SETTING_TIME = 9;
 let words = [];
-let time; 
-let isReady = false;
+let time;
 let isPlaying = false;
-let score = 0; 
+let score = 0;
 let timeInterval;
 
 const url = "https://random-word-api.herokuapp.com/word?number=100";
@@ -14,78 +13,118 @@ const scoreDisplay = document.querySelector(".score");
 const timeDisplay = document.querySelector(".time");
 const button = document.querySelector(".button");
 
+// Toast 알림
+const runToast = (text, color = "linear-gradient(to right, #f8f9fa, #ffffffcc)", textColor = "white") => {
+  Toastify({
+    text: text,
+    duration: 3000,
+    gravity: "top",
+    position: "center",
+    background: color,
+    style: {
+      color: textColor,
+      fontSize: "20px", 
+      fontWeight: "bold", 
+      padding: "20px 30px", 
+      borderRadius: "10px",
+      minWidth: "300px",
+      textAlign: "center", 
+      border: "2px solidrgb(255, 255, 255)", 
+      boxShadow: "0px 6px 10px rgba(30, 0, 255, 0.18)",
+    },
+  }).showToast();
+};
 
-//functions
-runToast = (text) => {
-  const option = {
-    text : text , 
-    duration : 3000, 
-    newWindow: true,
-    gravity:'top',
-    position:"left",
-    background:"linear-gradient(#00b09b,#96c3d)"
+// 단어 가져오기
+const getWords = async () => {
+  try {
+    const response = await axios.get(url);
+    words = response.data.filter((word) => word.length < 8);
+    button.innerText = "게임 시작";
+    button.disabled = false;
+  } catch (error) {
+    console.error("단어 로드 실패:", error);
   }
-  Toastify(option).showToast()
-}
+};
 
-
-const getWords = () => {
-  axios.get(url).then(res => {
-    words = res.data.filter(word => {
-     return word.length < 8 
-    })
-    button.innerText = '게임시작'
-    button.classList.remove('loading')
-    isReady = true;
-  }).catch(err => console.log(err))
-}
+// 게임 초기화
 const init = () => {
-  time = SETTING_TIME; 
+  time = SETTING_TIME;
   getWords();
-}
+};
+// 게임 시작
+const run = () => {
+  if (words.length === 0) return;
 
+  clearInterval(timeInterval);
+  isPlaying = true;
+  time = SETTING_TIME;
+  score = 0;
+  wordInput.value = "";
+  button.disabled = true;
+  button.innerText = "게임 진행 중...";
+
+  button.style.background = "linear-gradient(-45deg, #6b52a3, #4c82db)";
+
+  wordDisplay.innerHTML = `<i class="fa-solid fa-question"></i>`;
+
+  // 입력 필드 활성화 (게임 시작)
+  wordInput.disabled = false;
+
+  scoreDisplay.innerText = score;
+  timeInterval = setInterval(countDown, 3000);
+
+  updateWord();
+};
+
+// 게임 종료 시 입력창 다시 비활성화
 const countDown = () => {
-  if(time>0){
+  if (time > 0) {
     time--;
-  }else {
-    clearInterval(timeInterval)
+  } else {
+    clearInterval(timeInterval);
     isPlaying = false;
+    button.innerText = "게임 다시 시작";
+    button.disabled = false;
+
+    // 게임 종료 메시지
+    runToast("⏳ 게임 종료! 다시 시작하려면 버튼을 누르세요.");
+
+    // 버튼 색상 변경
+    button.style.background = "linear-gradient(-45deg, rgb(44, 4, 4), rgb(118, 122, 131))";
+
+    // 단어 영역 아이콘 변경
+    wordDisplay.innerHTML = `<i class="fa-solid fa-times-circle"></i>`;
+
+    // 입력 필드 비활성화 (게임 종료)
+    wordInput.disabled = true;
   }
   timeDisplay.innerText = time;
-}
+};
 
-const run = () => {
-  clearInterval(timeInterval)
-  if(isReady === false){
-    return;
-  }
-  timeInterval = setInterval(countDown, 1000)
-   wordInput.value= ""
-   score= 0;
-   time = SETTING_TIME;
-   scoreDisplay.innerText = score;
-    isPlaying =true;
-}
+// 단어 업데이트
+const updateWord = () => {
+  const randomIndex = Math.floor(Math.random() * words.length);
+  wordDisplay.innerHTML = `<span>${words[randomIndex]}</span>`;
+};
 
+// 입력 체크
 const checkMatch = () => {
-  // toUpperCase() -> 대문자로 변환 / toLowerCase() -> 소문자로 변환 
-  if(!isPlaying) {
-    return;
-  }
-  if(wordInput.value.toLowerCase() === wordDisplay.innerText.toLowerCase()){
+  if (!isPlaying) return;
+
+  if (wordInput.value.toLowerCase() === wordDisplay.textContent.toLowerCase()) {
     score++;
-    runToast(wordDisplay.innerText);
-    time = SETTING_TIME
-    wordInput.value= ""
-    // floor -> 내림처리 / round -> 반올림 / ceil -> 올림
-    const randomIndex = Math.floor(Math.random()*words.length)
-    wordDisplay.innerText = words[randomIndex]
+    runToast(wordDisplay.textContent);
+    time = SETTING_TIME;
+    wordInput.value = "";
+    scoreDisplay.innerText = score;
+    updateWord();
   }
-  scoreDisplay.innerText = score;
-}
+};
 
-//event handler
-wordInput.addEventListener("input", checkMatch)
+// 이벤트 리스너
+wordInput.addEventListener("input", checkMatch);
+button.addEventListener("click", run);
 
-//getting ready 
-init()
+// 게임 준비
+init();
