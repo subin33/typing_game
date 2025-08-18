@@ -23,13 +23,13 @@ const runToast = (text, color = "linear-gradient(to right, #f8f9fa, #ffffffcc)",
     background: color,
     style: {
       color: textColor,
-      fontSize: "20px", 
-      fontWeight: "bold", 
-      padding: "20px 30px", 
+      fontSize: "20px",
+      fontWeight: "bold",
+      padding: "20px 30px",
       borderRadius: "10px",
       minWidth: "300px",
-      textAlign: "center", 
-      border: "2px solidrgb(255, 255, 255)", 
+      textAlign: "center",
+      border: "2px solidrgb(255, 255, 255)",
       boxShadow: "0px 6px 10px rgba(30, 0, 255, 0.18)",
     },
   }).showToast();
@@ -102,10 +102,19 @@ const countDown = () => {
   timeDisplay.innerText = time;
 };
 
-// 단어 업데이트
+let previousWord = null; // 이전 단어 저장 변수
+
 const updateWord = () => {
-  const randomIndex = Math.floor(Math.random() * words.length);
-  wordDisplay.innerHTML = `<span>${words[randomIndex]}</span>`;
+  let randomIndex;
+  let newWord;
+
+  do {
+    randomIndex = Math.floor(Math.random() * words.length);
+    newWord = words[randomIndex];
+  } while (newWord === previousWord); // 이전 단어와 같으면 다시 뽑기
+
+  previousWord = newWord; // 현재 단어를 이전 단어로 저장
+  wordDisplay.innerHTML = `<span>${newWord}</span>`;
 };
 
 // 입력 체크
